@@ -1,0 +1,154 @@
+version: '3'
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: rabbitmq
+    volumes:
+      - /var/lib/rabbitmq
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    env_file:
+      - .env
+    # networks:
+    #   - my-network1
+
+  auth:
+    build: 
+      context: ./
+      dockerfile: ./apps/auth/Dockerfile
+    image: piotrwrbl/auth:latest
+    env_file:
+      - .env
+    depends_on:
+      - rabbitmq
+      - auth-db
+    volumes:
+      - /usr/src/app/node_modules
+    # networks:
+    #   - my-network1
+    command: npm run start:dev auth
+
+
+  chat:
+    build: 
+      context: ./
+      dockerfile: ./apps/chat/Dockerfile
+    image: piotrwrbl/chat:latest
+    env_file:
+      - .env
+    depends_on:
+      - rabbitmq
+      - chat-db
+    volumes:
+      - /usr/src/app/node_modules
+    # networks:
+    #   - my-network1
+    command: npm run start:dev chat
+
+  api:
+    image: piotrwrbl/api:latest
+    build: 
+      context: ./
+      dockerfile: ./apps/api/Dockerfile
+    ports:
+      - '4000:9000'
+    env_file:
+      - .env
+    depends_on:
+      - rabbitmq
+    volumes:
+      - /usr/src/app/node_modules
+    # networks:
+    #   - my-network1
+    command: npm run start:dev api
+    
+
+  image:
+    build: 
+      context: ./
+      dockerfile: ./apps/image/Dockerfile
+    image: piotrwrbl/image:latest
+    env_file:
+      - .env
+    depends_on:
+      - rabbitmq
+      - image-db
+    volumes:
+      - /usr/src/app/node_modules
+    # networks:
+    #   - my-network1
+    command: npm run start:dev image
+
+  
+  angular:
+    image: piotrwrbl/frontend:latest
+    build:
+      context: ./chatApp
+      dockerfile: Dockerfile
+    depends_on:
+      - rabbitmq
+    ports:
+      - '4200:4200'
+    volumes:
+      - /usr/src/app/node_modules
+  
+  auth-db:
+    image: postgres
+    env_file:
+      - .env
+    environment:
+      #POSTGRES_DB: ${AUTH_DB_NAME}
+      #POSTGRES_USER: ${AUTH_DB_USER}
+      #POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
+      POSTGRES_DB: auth
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: passoword
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./db/auth:/var/lib/postgresql/data
+    # networks:
+    #   - my-network1
+
+  chat-db:  
+    image: postgres
+    env_file:
+      - .env
+    environment:
+      #POSTGRES_DB: ${CHAT_DB_NAME}
+      #POSTGRES_USER: ${CHAT_DB_USER}
+      #POSTGRES_PASSWORD: ${CHAT_DB_PASSWORD}
+      POSTGRES_DB: chat
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: passoword
+    ports:
+      - '5433:5432'
+    volumes:
+      - ./db/chat:/var/lib/postgresql/data
+    # networks:
+    #   - my-network1
+
+  image-db:
+    image: postgres
+    env_file:
+      - .env
+    environment:
+      #POSTGRES_DB: ${IMAGE_DB_NAME}
+      #POSTGRES_USER: ${IMAGE_DB_USER}
+      #POSTGRES_PASSWORD: ${IMAGE_DB_PASSWORD}
+      POSTGRES_DB: image
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: passoword
+    ports:
+      - '5434:5432'
+    volumes:
+      - ./db/image:/var/lib/postgresql/data
+    # networks:
+    #   - my-network1
+
+# networks:
+#   my-network1: 
+#     driver: overlay
+    
+    

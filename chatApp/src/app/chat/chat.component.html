@@ -1,0 +1,50 @@
+<header>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">My App</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/login">Login</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <router-outlet></router-outlet>
+</header>
+<main class="chat">
+  <div class="container">
+    <div class="chat-content">
+      <div class="card">
+        <ul class="list-group list-group-flush" #messageList>
+          <li class="list-group-item" *ngFor="let chatMessage of chatMessages">
+            <strong>
+              {{chatMessage.name}}:
+            </strong>
+            <span>
+              {{chatMessage.message}}
+            </span>
+            <img *ngIf="chatMessage.image" [src]="'data:' + chatMessage.fileType + ';base64,' + chatMessage.image" alt="Image">
+            <button *ngIf="chatMessage.name === currentUserName" (click)="deleteMessage(chatMessage.id)" class="btn btn-danger">Delete</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <form (ngSubmit)="sendMessage(sendForm)" #sendForm="ngForm">
+      <div class="chat-send row">
+        <div class="col-8">
+          <input type="text" class="form-control" name="message" id="input-message" ngModel>
+        </div>
+        <div class="col-4">
+          <input type="file" (change)="onFileSelected($event)">
+          <button type="submit" class="btn btn-primary">Send</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</main>
