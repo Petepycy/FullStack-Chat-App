@@ -8,15 +8,19 @@ import { ChatMessageDto } from "../models/chatMessageDto";
   providedIn: 'root'
 })
 export class ChatService {
+  private readonly apiUrl: string;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+    this.apiUrl = `${window.location.protocol}//${window.location.host}/api`;
+   }
 
+  
   public getChatMessages(): Observable<ChatMessageDto[]> {
-    return this.http.get<ChatMessageDto[]>('http://localhost:4000/chat/getAllMessages');
+    return this.http.get<ChatMessageDto[]>('${this.apiUrl}/chat/getAllMessages');
   }
 
   public sendMessage(chatMessageDto: ChatMessageDto): Observable<ChatMessageDto> {
-    return this.http.post<ChatMessageDto>('http://localhost:4000/chat/postMessage', chatMessageDto);
+    return this.http.post<ChatMessageDto>('${this.apiUrl}/chat/postMessage', chatMessageDto);
   }
 
   public getChatMessagesPolling(intervalTime: number): Observable<ChatMessageDto[]> {
@@ -26,6 +30,6 @@ export class ChatService {
   }
 
   public deleteMessage(id: number): Observable<any> {
-    return this.http.post('http://localhost:4000/chat/deleteMessage', { id });
+    return this.http.post('${this.apiUrl}/chat/deleteMessage', { id });
   }
 }

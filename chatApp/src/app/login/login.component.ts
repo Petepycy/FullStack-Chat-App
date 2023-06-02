@@ -11,6 +11,7 @@ import { UserService } from '../shared/user.service';
 })
 export class LoginComponent {
 
+  private readonly apiUrl: string;
   user = {
     name: null,
     password: null
@@ -20,12 +21,14 @@ export class LoginComponent {
     private router: Router,
     private http: HttpClient,
     private userService: UserService
-  ) {}
+  ) {
+    this.apiUrl = `${window.location.protocol}//${window.location.host}/api`;
+  }
 
   onSubmit(user: any) {
     this.userService.userName = user.name;
     this.router.navigate(['/chat']);
-    this.http.post("http://localhost:4000/auth/register", user).subscribe(
+    this.http.post("${this.apiUrl}/auth/register", user).subscribe(
       (response) => {
         console.log(response);
       },
