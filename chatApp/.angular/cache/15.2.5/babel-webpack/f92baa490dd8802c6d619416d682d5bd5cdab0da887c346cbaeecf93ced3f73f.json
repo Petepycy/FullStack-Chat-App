@@ -1,0 +1,1 @@
+{"ast":null,"code":"export class ChatMessageDto {\n  constructor(name, message, photo, fileName, fileType) {\n    this.name = name;\n    this.message = message;\n    this.photo = photo;\n    this.fileName = fileName;\n    this.fileType = fileType;\n  }\n}","map":null,"metadata":{},"sourceType":"module","externalDependencies":[]}
