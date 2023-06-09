@@ -1,0 +1,133 @@
+version: '3.8'
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: rabbitmq
+    volumes:
+      - /var/lib/rabbitmq
+    ports:
+      - '17587:15672'
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+      - RABBITMQ_USER=user
+      - RABBITMQ_PASS=password
+      - RABBITMQ_HOST=rabbitmq:5672
+      - RABBITMQ_AUTH_QUEUE=auth_queue
+      - RABBITMQ_CHAT_QUEUE=chat_queue
+      - RABBITMQ_IMAGE_QUEUE=image_queue
+    networks:
+      - HPDS_175856
+
+  auth:
+    build: 
+      context: ./
+      dockerfile: ./apps/auth/Dockerfile
+    image: piotrwrbl/hpds_175856_auth:latest
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+      - RABBITMQ_USER=user
+      - RABBITMQ_PASS=password
+      - RABBITMQ_HOST=rabbitmq:5672
+      - RABBITMQ_AUTH_QUEUE=auth_queue
+      - POSTGRES_AUTH_URI=postgresql://postgres:student@actina15.maas:5432/HPDS_175856
+    depends_on:
+      - rabbitmq
+      - auth-db
+    volumes:
+      - /usr/src/app/node_modules
+    networks:
+      - HPDS_175856
+    command: npm run start:dev auth
+
+
+  chat:
+    build: 
+      context: ./
+      dockerfile: ./apps/chat/Dockerfile
+    image: piotrwrbl/hpds_175856_chat:latest
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+      - RABBITMQ_USER=user
+      - RABBITMQ_PASS=password
+      - RABBITMQ_HOST=rabbitmq:5672
+      - RABBITMQ_CHAT_QUEUE=chat_queue
+      - POSTGRES_CHAT_URI=postgresql://postgres:student@actina15.maas:5432/HPDS_175856
+    depends_on:
+      - rabbitmq
+    volumes:
+      - /usr/src/app/node_modules
+    networks:
+      - HPDS_175856
+    command: npm run start:dev chat
+
+  api:
+    image: piotrwrbl/hpds_175856_api:latest
+    build: 
+      context: ./
+      dockerfile: ./apps/api/Dockerfile
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+      - RABBITMQ_USER=user
+      - RABBITMQ_PASS=password
+      - RABBITMQ_HOST=rabbitmq:5672
+      - RABBITMQ_AUTH_QUEUE=auth_queue
+      - RABBITMQ_CHAT_QUEUE=chat_queue
+      - RABBITMQ_IMAGE_QUEUE=image_queue
+    depends_on:
+      - rabbitmq
+    ports:
+      - '17586:4000'
+    volumes:
+      - /usr/src/app/node_modules
+    networks:
+      - HPDS_175856
+    command: npm run start:dev api
+    
+
+  image:
+    build: 
+      context: ./
+      dockerfile: ./apps/image/Dockerfile
+    image: piotrwrbl/hpds_175856_image:latest
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+      - RABBITMQ_USER=user
+      - RABBITMQ_PASS=password
+      - RABBITMQ_HOST=rabbitmq:5672
+      - RABBITMQ_IMAGE_QUEUE=image_queue
+      - POSTGRES_CHAT_URI=postgresql://postgres:student@actina15.maas:5432/HPDS_175856
+    depends_on:
+      - rabbitmq
+    volumes:
+      - /usr/src/app/node_modules
+    networks:
+      - HPDS_175856
+    command: npm run start:dev image
+
+  
+  angular:
+    image: piotrwrbl/hpds_175856_frontend:latest
+    build:
+      context: ./chatApp
+      dockerfile: Dockerfile
+    depends_on:
+      - rabbitmq
+    ports:
+      - '17585:4200'
+    networks:
+      - HPDS_175856      
+    volumes:
+      - /usr/src/app/node_modules
+
+networks:
+  HPDS_175856: 
+    driver: overlay  
+  
+
+    
+    
